@@ -1,9 +1,10 @@
 import os
-# from dotenv import load_dotenv
 import requests
 from datetime import datetime
+# 로컬에서 실행시 dotenv import
+# from dotenv import load_dotenv
 
-# .env 파일 로드
+# 로컬에서 실행시 .env 파일 로드
 # load_dotenv()
 
 def fetch_notion_data():
