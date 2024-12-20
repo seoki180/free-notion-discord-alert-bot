@@ -1,10 +1,10 @@
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import requests
 from datetime import datetime
 
 # .env 파일 로드
-load_dotenv()
+# load_dotenv()
 
 def fetch_notion_data():
     notion_api_key = os.getenv('NOTION_API_KEY')
@@ -32,7 +32,7 @@ def create_slack_message(data):
     today = datetime.today().strftime("%Y-%m-%d")
 
     # ToDo 리스트 추가
-    todo_tasks = filter_tasks(data, ["할 일"])
+    todo_tasks = filter_tasks(data, ["To Do"])
     todo_section = {
         "type": "section",
         "text": {
@@ -42,7 +42,7 @@ def create_slack_message(data):
     }
 
     # 매일 알림 (ToDo에 포함되지 않은 것만)
-    daily_tasks = filter_tasks(data, ["매일"])
+    daily_tasks = filter_tasks(data, ["Daily"])
     daily_section = {
         "type": "section",
         "text": {
@@ -54,7 +54,7 @@ def create_slack_message(data):
     # 매주 토요일 알림
     weekly_section = {}
     if datetime.today().weekday() == 5:  # 토요일
-        weekly_tasks = filter_tasks(data, ["매주"])
+        weekly_tasks = filter_tasks(data, ["Weekly"])
         weekly_section = {
             "type": "section",
             "text": {
@@ -66,7 +66,7 @@ def create_slack_message(data):
     # 매월 마지막 주 토요일 알림
     monthly_section = {}
     if datetime.today().weekday() == 5 and (datetime.today().day + 7) > 31:  # 마지막 주 토요일
-        monthly_tasks = filter_tasks(data, ["매월"])
+        monthly_tasks = filter_tasks(data, ["Monthly"])
         monthly_section = {
             "type": "section",
             "text": {
