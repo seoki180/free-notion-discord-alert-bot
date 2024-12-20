@@ -32,17 +32,17 @@ def filter_tasks(data, task_types, status="진행 중"):
         
         if task_status == status and task_type_value in task_types:
             tasks.append(f"• *{title}*")  # 제목을 굵게 표시
-    return "\n".join(tasks)
+    
+    # 각 항목을 두 줄 바꿈으로 구분
+    return "\n".join(tasks) if tasks else "할 일이 없습니다."
 
 def create_discord_message(data):
     today = datetime.today().strftime("%Y-%m-%d")
     
-    # 기본 메시지 구성
     message = {
-        "content": "@everyone",  # 모든 사람에게 알림
         "embeds": [{
             "title": f"📅 오늘 날짜: {today}",
-            "color": 0x00ff00,  # 초록색
+            "color": 0x00ff00,
             "fields": []
         }]
     }
@@ -51,7 +51,7 @@ def create_discord_message(data):
     todo_tasks = filter_tasks(data, ["To Do"])
     message["embeds"][0]["fields"].append({
         "name": "📌 To Do",
-        "value": todo_tasks if todo_tasks else "할 일이 없습니다.",
+        "value": f"{todo_tasks}\n\u200B",  # 보이지 않는 문자로 줄바꿈 추가
         "inline": False
     })
     
@@ -59,7 +59,7 @@ def create_discord_message(data):
     daily_tasks = filter_tasks(data, ["Daily"])
     message["embeds"][0]["fields"].append({
         "name": "📋 Daily CheckList",
-        "value": daily_tasks if daily_tasks else "오늘 할 일이 없습니다.",
+        "value": f"{daily_tasks}\n\u200B",  # 보이지 않는 문자로 줄바꿈 추가
         "inline": False
     })
     
@@ -68,7 +68,7 @@ def create_discord_message(data):
         weekly_tasks = filter_tasks(data, ["Weekly"])
         message["embeds"][0]["fields"].append({
             "name": "📅 Weekly CheckList",
-            "value": weekly_tasks if weekly_tasks else "이번 주 할 일이 없습니다.",
+            "value": f"{weekly_tasks}\n\u200B",  # 보이지 않는 문자로 줄바꿈 추가
             "inline": False
         })
     
@@ -77,7 +77,7 @@ def create_discord_message(data):
         monthly_tasks = filter_tasks(data, ["Monthly"])
         message["embeds"][0]["fields"].append({
             "name": "📊 Monthly CheckList",
-            "value": monthly_tasks if monthly_tasks else "이번 달 할 일이 없습니다.",
+            "value": monthly_tasks,  # 마지막 필드는 줄바꿈 불필요
             "inline": False
         })
     
