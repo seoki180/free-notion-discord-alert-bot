@@ -1,4 +1,4 @@
-name: Notion to Slack Notification
+name: Notion to Discord Notification
 
 on:
   schedule:
@@ -27,6 +27,6 @@ jobs:
       env:
         NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
         NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
         python script.py
