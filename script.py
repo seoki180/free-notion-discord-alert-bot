@@ -2,10 +2,10 @@ import os
 import requests
 from datetime import datetime
 # 로컬에서 실행시 dotenv import
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 # 로컬에서 실행시 .env 파일 로드
-# load_dotenv()
+load_dotenv()
 
 def fetch_notion_data():
     notion_api_key = os.getenv('NOTION_API_KEY')
@@ -21,7 +21,12 @@ def fetch_notion_data():
 def filter_tasks(data, task_types, status="진행 중"):
     tasks = []
     for result in data.get('results', []):
-        title = result['properties']['할 일']['title'][0]['plain_text']
+        # 제목이 비어있는 경우 처리
+        title_array = result['properties']['할 일']['title']
+        if not title_array:  # 제목이 비어있으면 건너뛰기
+            continue
+            
+        title = title_array[0]['plain_text']
         task_status = result['properties']['상태']['status']['name']
         task_type_value = result['properties']['유형']['select']['name']
         
@@ -29,97 +34,64 @@ def filter_tasks(data, task_types, status="진행 중"):
             tasks.append(f"• *{title}*")  # 제목을 굵게 표시
     return "\n".join(tasks)
 
-def create_slack_message(data):
+def create_discord_message(data):
     today = datetime.today().strftime("%Y-%m-%d")
-
-    # ToDo 리스트 추가
+    
+    # 기본 메시지 구성
+    message = {
+        "content": "@everyone",  # 모든 사람에게 알림
+        "embeds": [{
+            "title": f"📅 오늘 날짜: {today}",
+            "color": 0x00ff00,  # 초록색
+            "fields": []
+        }]
+    }
+    
+    # ToDo 리스트
     todo_tasks = filter_tasks(data, ["To Do"])
-    todo_section = {
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": f"*To Do:*\n{todo_tasks if todo_tasks else '할 일이 없습니다.'}"
-        }
-    }
-
-    # 매일 알림 (ToDo에 포함되지 않은 것만)
+    message["embeds"][0]["fields"].append({
+        "name": "📌 To Do",
+        "value": todo_tasks if todo_tasks else "할 일이 없습니다.",
+        "inline": False
+    })
+    
+    # Daily 체크리스트
     daily_tasks = filter_tasks(data, ["Daily"])
-    daily_section = {
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": f"*Daily CheckList:*\n{daily_tasks if daily_tasks else '오늘 할 일이 없습니다.'}"
-        }
-    }
-
-    # 매주 토요일 알림
-    weekly_section = {}
-    if datetime.today().weekday() == 5:  # 토요일
+    message["embeds"][0]["fields"].append({
+        "name": "📋 Daily CheckList",
+        "value": daily_tasks if daily_tasks else "오늘 할 일이 없습니다.",
+        "inline": False
+    })
+    
+    # Weekly 체크 (토요일)
+    if datetime.today().weekday() == 5:
         weekly_tasks = filter_tasks(data, ["Weekly"])
-        weekly_section = {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Weekly CheckList:*\n{weekly_tasks if weekly_tasks else '이번 주 할 일이 없습니다.'}"
-            }
-        }
-
-    # 매월 마지막 주 토요일 알림
-    monthly_section = {}
-    if datetime.today().weekday() == 5 and (datetime.today().day + 7) > 31:  # 마지막 주 토요일
+        message["embeds"][0]["fields"].append({
+            "name": "📅 Weekly CheckList",
+            "value": weekly_tasks if weekly_tasks else "이번 주 할 일이 없습니다.",
+            "inline": False
+        })
+    
+    # Monthly 체크 (마지막 주 토요일)
+    if datetime.today().weekday() == 5 and (datetime.today().day + 7) > 31:
         monthly_tasks = filter_tasks(data, ["Monthly"])
-        monthly_section = {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Monthly CheckList:*\n{monthly_tasks if monthly_tasks else '이번 달 할 일이 없습니다.'}"
-            }
-        }
+        message["embeds"][0]["fields"].append({
+            "name": "📊 Monthly CheckList",
+            "value": monthly_tasks if monthly_tasks else "이번 달 할 일이 없습니다.",
+            "inline": False
+        })
+    
+    return message
 
-    # 메시지 블록 구성
-    blocks = [
-        {"type": "divider"},
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": f"오늘 날짜: {today}"
-            }
-        },
-        {"type": "divider"},
-        todo_section,
-        daily_section
-    ]
-
-    # 조건부 섹션 추가
-    if weekly_section:
-        blocks.append(weekly_section)
-    if monthly_section:
-        blocks.append(monthly_section)
-
-    blocks.append({"type": "divider"})
-
-    return blocks
-
-
-def send_slack_notification(blocks):
-    slack_bot_token = os.getenv('SLACK_BOT_TOKEN')
-    url = "https://slack.com/api/chat.postMessage"
-    headers = {
-        "Authorization": f"Bearer {slack_bot_token}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "channel": "#알림-봇",  # 원하는 채널로 변경
-        "blocks": blocks
-    }
-    requests.post(url, headers=headers, json=data)
-
+def send_discord_notification(message):
+    webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
+    response = requests.post(webhook_url, json=message)
+    return response.status_code == 204  # Discord webhook은 204를 반환하면 성공
 
 def main():
     data = fetch_notion_data()
-    blocks = create_slack_message(data)
-    send_slack_notification(blocks)
+    message = create_discord_message(data)
+    send_discord_notification(message)
 
 if __name__ == "__main__":
     main()
