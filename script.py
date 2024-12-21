@@ -1,6 +1,6 @@
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 # 로컬에서 실행시 dotenv import
 # from dotenv import load_dotenv
 
@@ -37,11 +37,13 @@ def filter_tasks(data, task_types, status="진행 중"):
     return "\n".join(tasks) if tasks else "할 일이 없습니다."
 
 def create_discord_message(data):
-    today = datetime.today().strftime("%Y-%m-%d")
+    # 한국 시간대 설정 (UTC+9)
+    kst = timezone(timedelta(hours=9))
+    today = datetime.now(kst)
     
     message = {
         "embeds": [{
-            "title": f"📅 오늘 날짜: {today}",
+            "title": f"📅 오늘 날짜: {today.strftime('%Y-%m-%d')}",
             "color": 0x00ff00,
             "fields": []
         }]
@@ -51,7 +53,7 @@ def create_discord_message(data):
     todo_tasks = filter_tasks(data, ["To Do"])
     message["embeds"][0]["fields"].append({
         "name": "📌 To Do",
-        "value": f"{todo_tasks}\n\u200B",  # 보이지 않는 문자로 줄바꿈 추가
+        "value": f"{todo_tasks if todo_tasks else '할 일이 없습니다.'}\n\u200B",  # 줄바꿈 추가
         "inline": False
     })
     
@@ -59,25 +61,26 @@ def create_discord_message(data):
     daily_tasks = filter_tasks(data, ["Daily"])
     message["embeds"][0]["fields"].append({
         "name": "📋 Daily CheckList",
-        "value": f"{daily_tasks}\n\u200B",  # 보이지 않는 문자로 줄바꿈 추가
+        "value": f"{daily_tasks if daily_tasks else '오늘 할 일이 없습니다.'}\n\u200B",  # 줄바꿈 추가
         "inline": False
     })
     
     # Weekly 체크 (토요일)
-    if datetime.today().weekday() == 5:
+    if today.weekday() == 5:
         weekly_tasks = filter_tasks(data, ["Weekly"])
         message["embeds"][0]["fields"].append({
             "name": "📅 Weekly CheckList",
-            "value": f"{weekly_tasks}\n\u200B",  # 보이지 않는 문자로 줄바꿈 추가
+            "value": f"{weekly_tasks if weekly_tasks else '이번 주 할 일이 없습니다.'}\n\u200B",  # 줄바꿈 추가
             "inline": False
         })
     
     # Monthly 체크 (마지막 주 토요일)
-    if datetime.today().weekday() == 5 and (datetime.today().day + 7) > 31:
+    next_week = today + timedelta(days=7)
+    if today.weekday() == 5 and next_week.month != today.month:
         monthly_tasks = filter_tasks(data, ["Monthly"])
         message["embeds"][0]["fields"].append({
             "name": "📊 Monthly CheckList",
-            "value": monthly_tasks,  # 마지막 필드는 줄바꿈 불필요
+            "value": monthly_tasks if monthly_tasks else "이번 달 할 일이 없습니다.",  # 마지막 필드는 줄바꿈 불필요
             "inline": False
         })
     

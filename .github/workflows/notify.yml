@@ -2,7 +2,7 @@ name: Notion to Discord Notification
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # 매일 오전 8시에 실행
+    - cron: '0 23 * * *'  # 매일 오전 8시에 실행
   workflow_dispatch:  # 수동 실행을 허용
 
 jobs:
