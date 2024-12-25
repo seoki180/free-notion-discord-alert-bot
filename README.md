@@ -23,4 +23,4 @@ github/workflows/notify.yml 파일의 cron 부분을 수정하여 알림 받을 
 4. Discord Web Hook URL
 
 ## 준비물 준비 및 생성법
-[Velog 게시글 링크](https://velog.io/@i-am-not-kangjik/%EB%AC%B4%EB%A3%8C-%EB%94%94%EC%8A%A4%EC%BD%94%EB%93%9C-%EC%95%8C%EB%A6%BC%EB%B4%87-%EC%83%9D%EC%84%B1%EA%B8%B0Notion-Github-Actions-Discord-Slack)
+[Velog 게시글 링크](https://velog.io/@i-am-not-kangjik/%EB%AC%B4%EB%A3%8C-To-do-List-%EB%94%94%EC%8A%A4%EC%BD%94%EB%93%9C-%EC%95%8C%EB%A6%BC%EB%B4%87-%EC%83%9D%EC%84%B1%EA%B8%B0Notion-Github-Actions-Discord-Slack)
