@@ -1,8 +1,8 @@
-name: Notion to Discord Notification
+name: Notion Calendar to Discord Notification
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # 매일 오전 8시에 실행
+    - cron: '0 23 * * *'  # 매일 오전 8시에 실행 (UTC 23:00 = KST 08:00)
   workflow_dispatch:  # 수동 실행을 허용
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests
 
-    - name: Run notification script
+    - name: Run calendar notification script
       env:
         NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
         NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
