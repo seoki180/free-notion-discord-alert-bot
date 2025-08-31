@@ -2,10 +2,10 @@ import os
 import requests
 from datetime import datetime, timezone, timedelta
 # 로컬에서 실행시 dotenv import
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-# 로컬에서 실행시 .env 파일 로드
-load_dotenv()
+# # 로컬에서 실행시 .env 파일 로드
+# load_dotenv()
 
 def fetch_notion_calendar():
     """노션 캘린더에서 오늘 일정을 가져옵니다."""
