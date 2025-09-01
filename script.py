@@ -187,8 +187,6 @@ def process_calendar_events(data):
                 loc_value = properties[loc_prop]
                 if loc_value.get('rich_text'):
                     location = loc_value['rich_text'][0]['plain_text']
-                elif loc_value.get('url'):
-                    location = loc_value['url']
                 break
 
         participant = ""
@@ -207,7 +205,7 @@ def process_calendar_events(data):
 
         events["date"].append(event_info)
         events["participant"].append(participant)
-    
+
     return events
 
 def create_discord_message(events):
@@ -228,7 +226,11 @@ def create_discord_message(events):
             }]
         }
     else:
-        events_text = "\n".join(events["date"])+ "    😀 참석 : ".join(events["participant"])
+        events_text = ""
+        for i in range(len(events["date"])):
+            events_text += events["date"][i] + "\t😀 참석 : " + events["participant"][i] + "\n"
+
+        # events_text = "\n".join(events["date"])+ "\t😀 참석 : ".join(events["participant"])
         message = {
             "embeds": [{
                 "title": f"📅 {today.strftime('%Y년 %m월 %d일')} 일정",
@@ -260,6 +262,7 @@ def main():
         print("디스코드 메시지를 생성하는 중...")
         message = create_discord_message(events)
 
+        print(message)  
         print("디스코드로 알림을 보내는 중...")
         success = send_discord_notification(message)
         
